@@ -73,21 +73,22 @@ void Loas2FakeWave(const char* source) {
     output_wav.write("0000", 4);//size-8bytes
     output_wav.write("WAVE", 4);
     output_wav.write("fmt ", 4);
-    int s = 16;
+    int s = 16; //16Bit
     output_wav.write((char*)&s, 4);
-    int t = 1;
+    int t = 1; //PCM
     output_wav.write((char*)&t, 2);
-    output_wav.write((char*)&t, 2);
-    int t2 = 48000;
+    int t1 = 1; //ch
+    output_wav.write((char*)&t1, 2);
+    int t2 = 48000; //KHz
     output_wav.write((char*)&t2, 4);
-    int t3 = 0x00770100;
+     int t3 = 0x00017700;
     output_wav.write((char*)&t3, 4);
-    int t4 = 0x0002;
-    output_wav.write((char*)&t4, 2);
+    int t4 = 0x0002; 
+    output_wav.write((char*)&t4, 2); //l
     output_wav.write((char*)&s, 2);
     output_wav.write("data", 4);
     output_wav.write("0000", 4);//size-126b 
-    char out_fill[2048] = { 0 };
+    char out_fill[4096] = { 0 };
     std::cout << "\n";
 
     while (import_latm.tellg() < size) {
@@ -106,7 +107,7 @@ void Loas2FakeWave(const char* source) {
         output_wav.write(out_fill, 2048);
         output_wav.seekp(sss);
         output_wav.write(fBuf, length);
-        output_wav.write("END", 3);
+        //output_wav.write("END", 3);
         output_wav.seekp((size_t)sss + 2048);
 
         std::cout << "\rOutput " << i + length << "bytes";
