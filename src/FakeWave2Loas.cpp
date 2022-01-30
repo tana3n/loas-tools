@@ -20,16 +20,31 @@ void FakeWave2Loas(const char* source) {
     }
     //std::cout << "Searching Header\n";
     char* hBuf = new char[6];
-
     unsigned char* header = (unsigned char*)hBuf;
+    int i = 46;//Skipping WAVE header
+
+    while (import_fakelatm.tellg() < size) {
+        import_fakelatm.seekg(i);
+        import_fakelatm.read(hBuf, 6);
+        if ((hBuf[0] != 0x56) || (hBuf[1] & 0xE0) != 0xe0) {
+            i = 1 + (int)i;
+            continue;
+        }
+        std::cout << i - 46 << "bytes skipped (" << (i- 46) / 4.0 << "samples DELAY " << ((i - 46) / 4.0 / 48) <<"ms)" << std::endl;
+        break;
+    }
+
+
     std::ofstream output_wav;
     filesystem::path p = source;
-    filesystem::path filename = p.replace_extension(".latm");
+    filesystem::path filename2 = p.replace_extension("");
+    int ms = round((i - 46) / 4.0 / 48);
+    std::string namerep= " DELAY " + to_string(ms) +"ms.latm";
+
+    filesystem::path filename = filename2.concat(namerep);
 
     std::cout << "Set OutputFile: " << filename << std::endl;
-
     output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-    int i = 40;//Skipping WAVE header
 
     while (import_fakelatm.tellg() < size) {
         import_fakelatm.seekg(i);
@@ -45,6 +60,7 @@ void FakeWave2Loas(const char* source) {
             i = 1 + i;
             continue;
         }
+
         int length = ((((((unsigned char*)hBuf)[1] & 0x1F) << 8) | ((unsigned char*)hBuf)[2]) + 3);
         char* fBuf = new char[length];
         import_fakelatm.seekg(i);
