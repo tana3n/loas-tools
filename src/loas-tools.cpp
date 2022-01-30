@@ -19,10 +19,10 @@ void usage() {
 }
 void cli_parser(char* argopts[], int optsum) {
     int i;
-    std::cout << optsum << "\n";
+    //std::cout << optsum << "\n";
 
     for (i = 0; i < optsum; i++) {
-        std::cout << argopts[i] << "\n";
+        //std::cout << argopts[i] << "\n";
         if (!_stricmp(argopts[i], "-D")) {
             FakeWave2Loas(argopts[optsum-1]);
         }
