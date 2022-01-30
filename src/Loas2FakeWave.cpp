@@ -15,7 +15,7 @@ constexpr int Header = 56;
 void Loas2FakeWave(const char* source) {
     std::cout << "InputFile: " << source << "\n";
     std::uintmax_t size = file_size(source);
-    std::cout << "Filesize: " << size << " bytes\n";
+    //std::cout << "Filesize: " << size << " bytes\n";
 
     std::ifstream import_latm(source, std::ios::in | std::ios::binary);
     if (!import_latm) {
@@ -29,10 +29,10 @@ void Loas2FakeWave(const char* source) {
     double samples = 48000.0 * (stoi(m[0].str()) / 1000.0);
     std::cout << "DELAY  " << m[0].str() << "ms" << "(" << samples << "samples)" << std::endl;
     double offsets = samples/1024.0;
-    double patting = (samples - round(offsets) * 1024.0) * 4;
+    double patting = (floor(offsets) * 1024.0 - samples) * 4;
     //std::cout << "Exaxtry Offsets: " << ceil(offsets) << "Frames + " << fmod(samples, 1024) << "samples(DELAY " << fmod(samples, 1024) / 48 << "ms)" << std::endl;
-    std::cout << "Exactly Offsets: " << round(offsets) << "Frames +" <<patting/4.0  <<"Sample (DELAY " << (samples - round(offsets)*1024.0) /48<< "ms)" << std::endl;
-    std::cout << "round Patting: " << (samples - round(offsets) * 1024.0) <<"sample("<< (samples - round(offsets) * 1024.0)*4 <<"bytes)" << std::endl;
+    std::cout << "Exactly Offsets: " << floor(offsets) << "Frames +" << patting / 4.0 << "Sample (DELAY " << (samples - floor(offsets) * 1024.0) / 48 << "ms)" << std::endl;
+    std::cout << "round Patting: " << (floor(offsets) * 1024.0 - samples) <<"sample("<< patting<<"bytes)" << std::endl;
 
 
     std::cout << "Searching Header\n";
@@ -56,24 +56,26 @@ void Loas2FakeWave(const char* source) {
         //std::cout << "0x" << i << " is 0x56. Checking next byte" << std::endl;
 
         if ((hBuf[1] & 0xE0) != 0xe0) {
-            //std::cout << "0x" << i << " is not 0xE0. This byte is 0x" << std::hex << (unsigned int)(unsigned char)hBuf[1] << std::endl;
+           // std::cout << "0x" << i << " is not 0xE0. This byte is 0x" << std::hex << (unsigned int)(unsigned char)hBuf[1] << std::endl;
             continue;
         }
         //std::cout << "0x" << i << " is 0xE0. Done SyncHeader" << std::endl;
-        fr += 1;
-        if (round(offsets) > 0) {
-            break;
-        }
-        if (fr <= std::abs(round(offsets))) {
-            std::cout << "\rSkipping  " << std::dec << fr <<" of " << std::abs(round(offsets));
-            continue;
-        }
-        std::cout << "Done Frame Skipping"<< std::endl;
         import_latm.seekg(i);
         break;
     }
+    
 
 
+    while(fr < (std::abs(floor(offsets)))) {
+        std::uintmax_t j = import_latm.tellg();
+        import_latm.read(hBuf, 6);
+        std::uintmax_t length = ((((((unsigned char*)hBuf)[1] & 0x1F) << 8) | ((unsigned char*)hBuf)[2]) + 3);
+        
+        std::cout << "Skipping  " << std::dec << fr << " of " << std::abs(floor(offsets)) << std::endl;
+        import_latm.seekg(j+length);
+        fr += 1;
+    }
+    std::cout << "Done Frame Skipping" << std::endl;
 
     std::ofstream output_wav;
     path p = source;
@@ -102,10 +104,12 @@ void Loas2FakeWave(const char* source) {
     output_wav.write("data", 4);
     output_wav.write("0000", 4);//size-126b 
     char out_fill[4096] = { 0 };
+    ///*
     if (patting < 0) {
         std::cout << "Delay correcting:  " << patting << " bytes" << std::endl;
         output_wav.write(out_fill, std::abs(patting));
     }
+    //*/
     int sp = 0;
     while (import_latm.tellg() < size) {
         sp = sp + 1;
@@ -120,7 +124,7 @@ void Loas2FakeWave(const char* source) {
         import_latm.seekg(i);
         import_latm.read(fBuf, length);
 
-        int sss = output_wav.tellp();
+        std::uintmax_t sss = output_wav.tellp();
         output_wav.write(out_fill, 4096);
         output_wav.seekp(sss);
         output_wav.write(fBuf, length);
@@ -130,12 +134,12 @@ void Loas2FakeWave(const char* source) {
         std::cout << "\rOutput " << i + length << "bytes " << sp << "frames";
         import_latm.seekg((size_t)i + length);
     }
-    int size2 = file_size(filename);
+    std::uintmax_t size2 = file_size(filename);
     output_wav.seekp(4);
-    int headers2 = size2 - 4;
+    std::uintmax_t headers2 = size2 - 4;
     output_wav.write((char*)&headers2, 4);
     output_wav.seekp(40);
-    int headers3 = size2 - 126;
+    std::uintmax_t headers3 = size2 - 126;
     output_wav.write((char*)&headers3, 4);
     output_wav.close();
     //unsigned char* header{} = header + 1;//next bytes
