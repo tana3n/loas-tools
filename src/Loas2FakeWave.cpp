@@ -10,8 +10,6 @@
 using namespace std::filesystem;
 
 constexpr int Header = 56;
-#define Version "1.0.0"
-
 
 
 void Loas2FakeWave(const char* source) {
@@ -24,14 +22,18 @@ void Loas2FakeWave(const char* source) {
         std::cout << "Can not open source: " << source;
         return;
     }
+    
     std::regex re(R"((?!(.+DELAY ))[-,0-9]{1,6})" );
     std::cmatch m;
     std::regex_search(source, m, re);
-    std::cout << "Calculating offset from " << m[0].str() << "ms" << std::endl;
-    double offsets = (stoi(m[0].str()) / 1000.0)/(1024.0 / 48000.0);
+    double samples = 48000.0 * (stoi(m[0].str()) / 1000.0);
+    std::cout << "DELAY  " << m[0].str() << "ms" << "(" << samples << "samples)" << std::endl;
+    double offsets = samples/1024.0;
+    double patting = (samples - round(offsets) * 1024.0) * 4;
+    //std::cout << "Exaxtry Offsets: " << ceil(offsets) << "Frames + " << fmod(samples, 1024) << "samples(DELAY " << fmod(samples, 1024) / 48 << "ms)" << std::endl;
+    std::cout << "Exactly Offsets: " << round(offsets) << "Frames +" <<patting/4.0  <<"Sample (DELAY " << (samples - round(offsets)*1024.0) /48<< "ms)" << std::endl;
+    std::cout << "round Patting: " << (samples - round(offsets) * 1024.0) <<"sample("<< (samples - round(offsets) * 1024.0)*4 <<"bytes)" << std::endl;
 
-    //std::cout << "Set Frametime is " << (1024.0 /48000.0) << "samples" << std::endl;
-    std::cout << "Calculated offset:" << round(offsets) << "samples" << std::endl;
 
     std::cout << "Searching Header\n";
     char* hBuf = new char[6];
@@ -51,19 +53,19 @@ void Loas2FakeWave(const char* source) {
             continue;
         }
 
-        std::cout << "0x" << i << " is 0x56. Checking next byte" << std::endl;
+        //std::cout << "0x" << i << " is 0x56. Checking next byte" << std::endl;
 
         if ((hBuf[1] & 0xE0) != 0xe0) {
-            std::cout << "0x" << i << " is not 0xE0. This byte is 0x" << std::hex << (unsigned int)(unsigned char)hBuf[1] << std::endl;
+            //std::cout << "0x" << i << " is not 0xE0. This byte is 0x" << std::hex << (unsigned int)(unsigned char)hBuf[1] << std::endl;
             continue;
         }
-        std::cout << "0x" << i << " is 0xE0. Done SyncHeader" << std::endl;
+        //std::cout << "0x" << i << " is 0xE0. Done SyncHeader" << std::endl;
         fr += 1;
         if (round(offsets) > 0) {
             break;
         }
-        if (fr < std::abs(round(offsets))) {
-            std::cout << "Skipping  " << std::dec << fr <<" of " << std::abs(round(offsets)) <<std::endl;
+        if (fr <= std::abs(round(offsets))) {
+            std::cout << "\rSkipping  " << std::dec << fr <<" of " << std::abs(round(offsets));
             continue;
         }
         std::cout << "Done Frame Skipping"<< std::endl;
@@ -100,9 +102,11 @@ void Loas2FakeWave(const char* source) {
     output_wav.write("data", 4);
     output_wav.write("0000", 4);//size-126b 
     char out_fill[4096] = { 0 };
-    //output_wav.write(out_fill, 512);
+    if (patting < 0) {
+        std::cout << "Delay correcting:  " << patting << " bytes" << std::endl;
+        output_wav.write(out_fill, std::abs(patting));
+    }
     int sp = 0;
-
     while (import_latm.tellg() < size) {
         sp = sp + 1;
         i = import_latm.tellg();
