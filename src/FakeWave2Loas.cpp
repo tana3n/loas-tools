@@ -9,25 +9,6 @@ using namespace std;
 
 #define Version "1.0.0"
 
-void FakeWave2Loas(const char* source);
-void usage();
-
-int main(int argc, char* argv[])
-{
-    std::cout << "FakeWave2Loas Version " << Version << "\n\n";
-
-    if (argc < 2) {
-        std::cout << "[Error]No Input Fake LATM/LAOS File\n";
-        usage();
-
-        return 0;
-    }
-    std::cout << "InputFile: " << argv[1] << "\n";
-
-    FakeWave2Loas(argv[1]);
-
-}
-
 void FakeWave2Loas(const char* source) {
     uintmax_t size = filesystem::file_size(source);
     std::cout << "[Info]Filesize: " << double(size)/1024/1024<< " Mbytes\n";
@@ -76,9 +57,4 @@ void FakeWave2Loas(const char* source) {
        // if (i >= 10000) { break; }
     }
 
-}
-
-void usage() {
-    std::cout << "Usage: FakeWave2Loas input.wav \n";
-    return;
 }

@@ -5,26 +5,14 @@
 #include <string>
 #include <filesystem>
 #include <regex>
+
+
 using namespace std::filesystem;
 
 constexpr int Header = 56;
 #define Version "1.0.0"
 
-void Loas2FakeWave(const char* source);
-void usage();
 
-int main(int argc, char* argv[])
-{
-    std::cout << "Loas2FakeWave Version " << Version << "\n\n";
-
-    if (argc < 2) {
-        std::cout << "[Error]No Input LATM/LAOS File\n";
-        usage();
-
-        return 0;
-    }
-    Loas2FakeWave(argv[1]);
-}
 
 void Loas2FakeWave(const char* source) {
     std::cout << "InputFile: " << source << "\n";
@@ -148,9 +136,4 @@ void Loas2FakeWave(const char* source) {
     output_wav.close();
     //unsigned char* header{} = header + 1;//next bytes
 
-}
-
-void usage() {
-    std::cout << "Usage: Loas2FakeWave input.latm \n";
-    return;
 }

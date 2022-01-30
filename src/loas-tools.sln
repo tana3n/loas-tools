@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Loas2FakeWave", "Loas2FakeWave\Loas2FakeWave.vcxproj", "{A3398929-9CAE-4ED6-88AB-D3FEB553BD27}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FakeWave2Loas", "FakeWave2Loas\FakeWave2Loas.vcxproj", "{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "loas-tools", "Loas2FakeWave\Loas2FakeWave.vcxproj", "{A3398929-9CAE-4ED6-88AB-D3FEB553BD27}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,14 +21,6 @@ Global
 		{A3398929-9CAE-4ED6-88AB-D3FEB553BD27}.Release|x64.Build.0 = Release|x64
 		{A3398929-9CAE-4ED6-88AB-D3FEB553BD27}.Release|x86.ActiveCfg = Release|Win32
 		{A3398929-9CAE-4ED6-88AB-D3FEB553BD27}.Release|x86.Build.0 = Release|Win32
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Debug|x64.ActiveCfg = Debug|x64
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Debug|x64.Build.0 = Debug|x64
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Debug|x86.ActiveCfg = Debug|Win32
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Debug|x86.Build.0 = Debug|Win32
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Release|x64.ActiveCfg = Release|x64
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Release|x64.Build.0 = Release|x64
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Release|x86.ActiveCfg = Release|Win32
-		{C490FFB9-939E-4134-ABBF-BC6B0E3E2C2F}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
