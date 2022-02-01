@@ -20,6 +20,11 @@ void usage() {
 void cli_parser(char* argopts[], int optsum) {
     int i;
     //std::cout << optsum << "\n";
+    std::ifstream ifs(argopts[optsum - 1]);
+    if (!ifs.is_open()) {
+        std::cout << "[Error]Failed read LATM/LAOS or FakeWaveLATM/LOAS File\n\n";
+        return;
+    }
 
     for (i = 0; i < optsum; i++) {
         //std::cout << argopts[i] << "\n";
