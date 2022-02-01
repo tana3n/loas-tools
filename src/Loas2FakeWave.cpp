@@ -78,8 +78,8 @@ void Loas2FakeWave(const char* source) {
     std::cout << "Done Frame Skipping" << std::endl;
 
     std::ofstream output_wav;
-    path p = source;
-    path filename = p.replace_extension(".wav");
+    path p = std::regex_replace(source, re, "0");
+    path filename = p.replace_extension("wav");
     std::cout << "SetOutput: " << filename << std::endl;
     std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
 
