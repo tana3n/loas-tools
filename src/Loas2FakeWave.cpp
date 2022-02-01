@@ -85,7 +85,7 @@ void Loas2FakeWave(const char* source) {
 
     output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
     output_wav.write("RIFF", 4);
-    output_wav.write("0000", 4);//size-8bytes
+    output_wav.seekp(8);
     output_wav.write("WAVE", 4);
     output_wav.write("fmt ", 4);
     int s = 16; //16Bit
@@ -96,13 +96,14 @@ void Loas2FakeWave(const char* source) {
     output_wav.write((char*)&t1, 2);
     int t2 = 48000; //KHz
     output_wav.write((char*)&t2, 4);
-    int t3 = t2 * t1 * (s/8);//0x00017700;
+    int t3 = t2 * t1 * (s/8); //0x00017700;
     output_wav.write((char*)&t3, 4);
     int t4 = 0x0004; 
     output_wav.write((char*)&t4, 2); //l
     output_wav.write((char*)&s, 2);
     output_wav.write("data", 4);
-    output_wav.write("0000", 4);//size-126b 
+    output_wav.seekp(44);
+
     char out_fill[4096] = { 0 };
     ///*
     if (patting < 0) {
