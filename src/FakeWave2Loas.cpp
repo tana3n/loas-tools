@@ -7,8 +7,6 @@
 #include <filesystem>
 using namespace std;
 
-#define Version "1.0.0"
-
 void FakeWave2Loas(const char* source,bool quickmode) {
     uintmax_t size = filesystem::file_size(source);
     std::cout << "[Info]Filesize: " << double(size)/1024/1024<< " Mbytes\n";
