@@ -9,7 +9,7 @@ using namespace std;
 
 #define Version "1.0.0"
 
-void FakeWave2Loas(const char* source) {
+void FakeWave2Loas(const char* source,bool quickmode) {
     uintmax_t size = filesystem::file_size(source);
     std::cout << "[Info]Filesize: " << double(size)/1024/1024<< " Mbytes\n";
 
@@ -62,8 +62,19 @@ void FakeWave2Loas(const char* source) {
 
         std::cout << "\r[" << std::setfill('0') << std::left <<std::setw(4) <<  std::floor(double(i+length) / (double)size*10000)/100 
             << "%]";//Output " << double((size_t)i + length)/1024/1024 << "Mbytes" ;
-        i = i + length;
 
+        if (quickmode) {
+            import_fakelatm.seekg(i + 4096);
+            import_fakelatm.read(hBuf, 6);
+            if ((hBuf[0] != 0x56) || (hBuf[1] & 0xE0) != 0xe0) {
+                i = 1 + i;
+                continue;
+            }
+            i = i + 4096;//== ch * (Bit/8)
+        } else {
+            i = 1 + i;
+        }
+        
     }
-
+    return;
 }
