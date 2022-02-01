@@ -27,15 +27,18 @@ void Loas2FakeWave(const char* source) {
     std::cmatch m;
     std::regex_search(source, m, re);
     double samples = 48000.0 * (stoi(m[0].str()) / 1000.0);
+    std::ofstream output_wav;
+    path p = std::regex_replace(source, re, "0");
+    path filename = p.replace_extension("wav");
+    std::cout << "SetOutputFile: " << filename << std::endl;
     std::cout << "DELAY  " << m[0].str() << "ms" << "(" << samples << "samples)" << std::endl;
     double offsets = samples/1024.0;
     double patting = (floor(offsets) * 1024.0 - samples) * 4;
     //std::cout << "Exaxtry Offsets: " << ceil(offsets) << "Frames + " << fmod(samples, 1024) << "samples(DELAY " << fmod(samples, 1024) / 48 << "ms)" << std::endl;
     std::cout << "Exactly Offsets: " << floor(offsets) << "Frames +" << patting / 4.0 << "Sample (DELAY " << (samples - floor(offsets) * 1024.0) / 48 << "ms)" << std::endl;
-    std::cout << "round Patting: " << (floor(offsets) * 1024.0 - samples) <<"sample("<< patting<<"bytes)" << std::endl;
 
 
-    std::cout << "Searching Header\n";
+    //std::cout << "Searching Header\n";
     char* hBuf = new char[6];
 
     int i = 0;
@@ -63,7 +66,8 @@ void Loas2FakeWave(const char* source) {
         import_latm.seekg(i);
         break;
     }
-    
+    std::cout << "Done Searching Header\n";
+
 
 
     while(fr < (std::abs(floor(offsets)))) {
@@ -71,16 +75,11 @@ void Loas2FakeWave(const char* source) {
         import_latm.read(hBuf, 6);
         std::uintmax_t length = ((((((unsigned char*)hBuf)[1] & 0x1F) << 8) | ((unsigned char*)hBuf)[2]) + 3);
         
-        std::cout << "Skipping  " << std::dec << fr << " of " << std::abs(floor(offsets)) << std::endl;
+        //std::cout << "Skipping  " << std::dec << fr << " of " << std::abs(floor(offsets)) << std::endl;
         import_latm.seekg(j+length);
         fr += 1;
     }
     std::cout << "Done Frame Skipping" << std::endl;
-
-    std::ofstream output_wav;
-    path p = std::regex_replace(source, re, "0");
-    path filename = p.replace_extension("wav");
-    std::cout << "SetOutput: " << filename << std::endl;
     std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
 
     output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
@@ -107,7 +106,7 @@ void Loas2FakeWave(const char* source) {
     char out_fill[4096] = { 0 };
     ///*
     if (patting < 0) {
-        std::cout << "Delay correcting:  " << patting << " bytes" << std::endl;
+        std::cout << "Delay correcting:  " << (floor(offsets) * 1024.0 - samples) << "sample(" << patting << "bytes)" << std::endl;
         output_wav.write(out_fill, std::abs(patting));
     }
     //*/
@@ -131,10 +130,13 @@ void Loas2FakeWave(const char* source) {
         output_wav.write(fBuf, length);
         //output_wav.write("END", 3);
         output_wav.seekp((size_t)sss + 4096);
-
-        std::cout << "\rOutput " << i + length << "bytes " << sp << "frames";
+        std::cout << 
+            "[" << std::setfill('0') << std::left << std::setw(4) << std::floor(double(i + length) / (double)size * 10000) / 100 << "%]\r";
+        //std::cout << "\rOutput " << i + length << "bytes " << sp << "frames";
         import_latm.seekg((size_t)i + length);
     }
+    std::cout << "\rOutput " << size << "bytes (" << sp << "frames)";
+
     std::uintmax_t size2 = file_size(filename);
     output_wav.seekp(4);
     std::uintmax_t headers2 = size2 - 4;

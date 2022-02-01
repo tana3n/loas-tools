@@ -40,7 +40,6 @@ void FakeWave2Loas(const char* source) {
     filesystem::path filename2 = p.replace_extension("");
     int ms = round((i - 46) / 4.0 / 48);
     std::string namerep= " DELAY " + to_string(ms) +"ms.latm";
-
     filesystem::path filename = filename2.concat(namerep);
 
     std::cout << "Set OutputFile: " << filename << std::endl;
