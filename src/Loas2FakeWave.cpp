@@ -6,10 +6,9 @@
 #include <filesystem>
 #include <regex>
 
+#include "Loas2FakeWave.h"
 
 using namespace std::filesystem;
-
-constexpr int Header = 56;
 
 
 void Loas2FakeWave(const char* source) {
@@ -82,26 +81,19 @@ void Loas2FakeWave(const char* source) {
     std::cout << "Done Frame Skipping" << std::endl;
     std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
 
-    output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-    output_wav.write("RIFF", 4);
-    output_wav.seekp(8);
-    output_wav.write("WAVE", 4);
-    output_wav.write("fmt ", 4);
-    int s = 16; //16Bit
-    output_wav.write((char*)&s, 4);
-    int t = 1; //PCM
-    output_wav.write((char*)&t, 2);
-    int t1 = 2; //ch
-    output_wav.write((char*)&t1, 2);
-    int t2 = 48000; //KHz
-    output_wav.write((char*)&t2, 4);
-    int t3 = t2 * t1 * (s/8); //0x00017700;
-    output_wav.write((char*)&t3, 4);
-    int t4 = 0x0004; 
-    output_wav.write((char*)&t4, 2); //l
-    output_wav.write((char*)&s, 2);
-    output_wav.write("data", 4);
-    output_wav.seekp(44);
+
+    struct _waveheader wave;
+    wave.riff.chunkId = *reinterpret_cast<const uint32_t*>("RIFF");
+    wave.wave.chunkId = *reinterpret_cast<const uint32_t*>("WAVE");
+    wave.wave.fmt = *reinterpret_cast<const uint32_t*>("fmt ");
+    wave.wave.chunkSize = 16;
+    wave.wave.bitdepth = 16;
+    wave.wave.channel = 2;
+    wave.wave.formatTag = 1;
+    wave.wave.samplingRate = 48000;
+    wave.wave.blockSize = wave.wave.channel * (wave.wave.bitdepth / 8);
+    wave.wave.byteRate = wave.wave.blockSize * wave.wave.samplingRate; //0x00017700;
+    wave.data.chunkId = *reinterpret_cast<const uint32_t*>("data");
 
     char out_fill[4096] = { 0 };
     ///*
@@ -111,6 +103,9 @@ void Loas2FakeWave(const char* source) {
     }
     //*/
     int sp = 0;
+    output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+    output_wav.seekp(sizeof(wave));
+
     while (import_latm.tellg() < size) {
         sp = sp + 1;
         i = import_latm.tellg();
@@ -138,13 +133,12 @@ void Loas2FakeWave(const char* source) {
     std::cout << "\rOutput " << size << "bytes (" << sp << "frames)";
 
     std::uintmax_t size2 = file_size(filename);
-    output_wav.seekp(4);
-    std::uintmax_t headers2 = size2 - 4;
-    output_wav.write((char*)&headers2, 4);
-    output_wav.seekp(40);
-    std::uintmax_t headers3 = size2 - 126;
-    output_wav.write((char*)&headers3, 4);
+
+    output_wav.seekp(0);
+    wave.riff.chunkSize = size2 - 4;
+    wave.data.chunkSize = size2 - 126;
+    output_wav.write((char*)&wave, sizeof(wave));
+
     output_wav.close();
-    //unsigned char* header{} = header + 1;//next bytes
 
 }
