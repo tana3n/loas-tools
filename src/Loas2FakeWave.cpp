@@ -67,8 +67,6 @@ void Loas2FakeWave(const char* source) {
     }
     std::cout << "Done Searching Header\n";
 
-
-
     while(fr < (std::abs(floor(offsets)))) {
         std::uintmax_t j = import_latm.tellg();
         import_latm.read(hBuf, 6);
@@ -78,9 +76,9 @@ void Loas2FakeWave(const char* source) {
         import_latm.seekg(j+length);
         fr += 1;
     }
+
     std::cout << "Done Frame Skipping" << std::endl;
     std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
-
 
     struct _waveheader wave;
     wave.riff.chunkId = *reinterpret_cast<const uint32_t*>("RIFF");
@@ -92,19 +90,20 @@ void Loas2FakeWave(const char* source) {
     wave.wave.formatTag = 1;
     wave.wave.samplingRate = 48000;
     wave.wave.blockSize = wave.wave.channel * (wave.wave.bitdepth / 8);
-    wave.wave.byteRate = wave.wave.blockSize * wave.wave.samplingRate; //0x00017700;
+    wave.wave.byteRate = wave.wave.blockSize * wave.wave.samplingRate; // 0x00017700;
     wave.data.chunkId = *reinterpret_cast<const uint32_t*>("data");
 
     char out_fill[4096] = { 0 };
-    ///*
+
+    output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+    output_wav.seekp(sizeof(wave));
+
     if (patting < 0) {
         std::cout << "Delay correcting:  " << (floor(offsets) * 1024.0 - samples) << "sample(" << patting << "bytes)" << std::endl;
         output_wav.write(out_fill, std::abs(patting));
     }
-    //*/
+
     int sp = 0;
-    output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
-    output_wav.seekp(sizeof(wave));
 
     while (import_latm.tellg() < size) {
         sp = sp + 1;
@@ -140,5 +139,4 @@ void Loas2FakeWave(const char* source) {
     output_wav.write((char*)&wave, sizeof(wave));
 
     output_wav.close();
-
 }
