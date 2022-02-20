@@ -15,7 +15,6 @@ void usage() {
     std::cout << "Options:\n";
     std::cout << "-D\tDecode mode(FakeWave to latm)\n";
     std::cout << "-F\tFake mode (latm to FakeWave)\n";
-    std::cout << "--Quick\tQuick Decode Mode(Unsafe Mode)\n";
     return;
 }
 void cli_parser(char* argopts[], int optsum) {
@@ -31,10 +30,7 @@ void cli_parser(char* argopts[], int optsum) {
         //std::cout << argopts[i] << "\n";
         if (!_stricmp(argopts[i], "-D")) {
             FakeWave2Loas(argopts[optsum-1],false);
-        }else if (!_stricmp(argopts[i], "--Quick")) {
-            FakeWave2Loas(argopts[optsum - 1],true);
         }
-
         else if (!_stricmp(argopts[i], "-F")) {
             Loas2FakeWave(argopts[optsum-1]);
         }
