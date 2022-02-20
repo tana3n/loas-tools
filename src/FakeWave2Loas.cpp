@@ -33,15 +33,18 @@ void FakeWave2Loas(const char* source,bool quickmode) {
     }
 
 
-    std::ofstream output_wav;
+    std::ofstream output_latm;
     filesystem::path p = source;
-    filesystem::path filename2 = p.replace_extension("");
+    filesystem::path filename2 = p.replace_extension(".latm");
     int ms = round((i - 46) / 4.0 / 48);
     std::string namerep= " DELAY " + to_string(ms) +"ms.latm";
-    filesystem::path filename = filename2.concat(namerep);
+    filesystem::path filename = filename2;// .concat(namerep);
 
     std::cout << "Set OutputFile: " << filename << std::endl;
-    output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+    if (filesystem::exists(filename) == 1) {
+        return;
+    }
+    output_latm.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
 
     while (import_fakelatm.tellg() < size) {
         import_fakelatm.seekg(i);
@@ -56,7 +59,7 @@ void FakeWave2Loas(const char* source,bool quickmode) {
         char* fBuf = new char[length];
         import_fakelatm.seekg(i);
         import_fakelatm.read(fBuf, length);
-        output_wav.write(fBuf, length);
+        output_latm.write(fBuf, length);
 
         std::cout << "\r[" << std::setfill('0') << std::left <<std::setw(4) <<  std::floor(double(i+length) / (double)size*10000)/100 
             << "%]";//Output " << double((size_t)i + length)/1024/1024 << "Mbytes" ;
