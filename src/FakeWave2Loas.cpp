@@ -7,7 +7,10 @@
 #include <filesystem>
 using namespace std;
 
-void FakeWave2Loas(const char* source,bool quickmode) {
+#include "FakeWave2Loas.h"
+#include "loas-tools.h"
+
+void FakeWave2Loas(const char* source,struct _opts *option) {
     uintmax_t size = filesystem::file_size(source);
     std::cout << "[Info]Filesize: " << double(size)/1024/1024<< " Mbytes\n";
 
@@ -35,16 +38,24 @@ void FakeWave2Loas(const char* source,bool quickmode) {
 
     std::ofstream output_latm;
     filesystem::path p = source;
-    filesystem::path filename2 = p.replace_extension(".latm");
-    int ms = round((i - 46) / 4.0 / 48);
-    std::string namerep= " DELAY " + to_string(ms) +"ms.latm";
-    filesystem::path filename = filename2;// .concat(namerep);
+    if (option->exact){
+        filesystem::path filename2 = p.replace_extension("");
+        int ms = round((i - 46) / 4.0 / 48);
+        std::string namerep = " DELAY " + to_string(ms) + "ms.latm";
+        p = filename2.concat(namerep);
+    }
+    else {
+        filesystem::path filename2 = p.replace_extension(".latm");
+        p = filename2;
+    }
+    if (filesystem::exists(p) & !(option->overwrite) ) {
+        std::cout <<"[Error]" << p << "is exist. (use overwrite options: --overwrite)" << std::endl;
 
-    std::cout << "Set OutputFile: " << filename << std::endl;
-    if (filesystem::exists(filename) == 1) {
         return;
     }
-    output_latm.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+    std::cout << "Set OutputFile: " << p << std::endl;
+
+    output_latm.open(p, std::ios::out | std::ios::binary | std::ios::trunc);
 
     while (import_fakelatm.tellg() < size) {
         import_fakelatm.seekg(i);
@@ -70,12 +81,10 @@ void FakeWave2Loas(const char* source,bool quickmode) {
             i = 1 + i;
             continue;
         }
-        i = i + 4096;//== ch * (Bit/8)
-       
+        else {
+            i = i + 4096;//== ch * (Bit/8)
+        }
+        
     }
     return;
-}
-
-bool CheckRiff(char const input) {
-
 }
