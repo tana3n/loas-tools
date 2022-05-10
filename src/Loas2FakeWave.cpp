@@ -32,7 +32,7 @@ void Loas2FakeWave(const char* source) {
     std::cout << "SetOutputFile: " << filename << std::endl;
     std::cout << "DELAY  " << m[0].str() << "ms" << "(" << samples << "samples)" << std::endl;
     double offsets = samples/1024.0;
-    double patting = (floor(offsets) * 1024.0 - samples) * 4;
+    double patting = (floor(offsets) * 1024.0 - samples) * 6;
     //std::cout << "Exaxtry Offsets: " << ceil(offsets) << "Frames + " << fmod(samples, 1024) << "samples(DELAY " << fmod(samples, 1024) / 48 << "ms)" << std::endl;
     std::cout << "Exactly Offsets: " << floor(offsets) << "Frames +" << patting / 4.0 << "Sample (DELAY " << (samples - floor(offsets) * 1024.0) / 48 << "ms)" << std::endl;
 
@@ -85,7 +85,7 @@ void Loas2FakeWave(const char* source) {
     wave.wave.chunkId = *reinterpret_cast<const uint32_t*>("WAVE");
     wave.wave.fmt = *reinterpret_cast<const uint32_t*>("fmt ");
     wave.wave.chunkSize = 16;
-    wave.wave.bitdepth = 16;
+    wave.wave.bitdepth = 24;
     wave.wave.channel = 2;
     wave.wave.formatTag = 1;
     wave.wave.samplingRate = 48000;
@@ -93,7 +93,7 @@ void Loas2FakeWave(const char* source) {
     wave.wave.byteRate = wave.wave.blockSize * wave.wave.samplingRate; // 0x00017700;
     wave.data.chunkId = *reinterpret_cast<const uint32_t*>("data");
 
-    char out_fill[4096] = { 0 };
+    char out_fill[6144] = { 0 };
 
     output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
     output_wav.seekp(sizeof(wave));
@@ -119,11 +119,11 @@ void Loas2FakeWave(const char* source) {
         import_latm.read(fBuf, length);
 
         std::uintmax_t sss = output_wav.tellp();
-        output_wav.write(out_fill, 4096);
+        output_wav.write(out_fill, 6144);
         output_wav.seekp(sss);
         output_wav.write(fBuf, length);
         //output_wav.write("END", 3);
-        output_wav.seekp((size_t)sss + 4096);
+        output_wav.seekp((size_t)sss + 6144);
         std::cout << 
             "[" << std::setfill('0') << std::left << std::setw(4) << std::floor(double(i + length) / (double)size * 10000) / 100 << "%]\r";
         //std::cout << "\rOutput " << i + length << "bytes " << sp << "frames";

@@ -20,8 +20,7 @@ void FakeWave2Loas(const char* source,struct _opts *option) {
         return;
     }
     //std::cout << "Searching Header\n";
-    char* hBuf = new char[6];
-    unsigned char* header = (unsigned char*)hBuf;
+    char* hBuf = new char[6144];
     int i = 46;//Skipping WAVE header
 
     while (import_fakelatm.tellg() < size) {
@@ -56,33 +55,25 @@ void FakeWave2Loas(const char* source,struct _opts *option) {
     std::cout << "Set OutputFile: " << p << std::endl;
 
     output_latm.open(p, std::ios::out | std::ios::binary | std::ios::trunc);
-
-    while (import_fakelatm.tellg() < size) {
+    for (int i = 0; i < size; i++) {
+    //while (import_fakelatm.tellg() <= size) {//sync
         import_fakelatm.seekg(i);
-        import_fakelatm.read(hBuf, 6);
+        import_fakelatm.read(hBuf, 6144);
         if ( (hBuf[0] != 0x56) || (hBuf[1] & 0xE0) != 0xe0 ){
-            //std::cout << "hBuf[" << i << "] is not 0x56. This byte is 0x" << std::hex << (unsigned int)(unsigned char)hBuf[0] << std::endl;
-            i = 1 + (int)i;
-            //std::cout << "Next Byte is " << i  << std::endl;
             continue;
         }
+
         int length = ((((((unsigned char*)hBuf)[1] & 0x1F) << 8) | ((unsigned char*)hBuf)[2]) + 3);
-        char* fBuf = new char[length];
-        import_fakelatm.seekg(i);
-        import_fakelatm.read(fBuf, length);
-        output_latm.write(fBuf, length);
+        output_latm.write(hBuf, length);
 
         std::cout << "\r[" << std::setfill('0') << std::left <<std::setw(4) <<  std::floor(double(i+length) / (double)size*10000)/100 
             << "%]";//Output " << double((size_t)i + length)/1024/1024 << "Mbytes" ;
-
-        import_fakelatm.seekg(i + 4096);
-        import_fakelatm.read(hBuf, 6);
+        import_fakelatm.read(hBuf, 6144);
         if ((hBuf[0] != 0x56) || (hBuf[1] & 0xE0) != 0xe0) {
-            i = 1 + i;
             continue;
         }
         else {
-            i = i + 4096;//== ch * (Bit/8)
+            i = i + 6143;//4095;//== ch * (Bit/8)
         }
         
     }
