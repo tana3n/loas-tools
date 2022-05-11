@@ -30,6 +30,8 @@ void usage() {
     std::cout << "Options:\n";
     std::cout << "-D\tDecode mode(FakeWave to latm)\n";
     std::cout << "-F\tFake mode (latm to FakeWave)\n\n";
+    std::cout << "--bit\tSelecting WaveHeader blocksize (for Fake mode)\n\t8:\t8bit\n\t16:\t16bit\n\t24:\t24bit(default)\n";
+
     std::cout << "--overwrite\tIf it exists in the output destination, it will be overwritten\n";
     std::cout << "--exact\tOutputs the deviation correction information of the start point(This is vaild for matroska)\n";
 
@@ -46,6 +48,7 @@ void cli_parser(char* argopts[], int optsum) {
 
     option.overwrite = false;
     option.exact = false;
+    option.bitdepth = 24;
     bool set_d = false;
     bool set_f = false;
     path src = argopts[optsum - 1];
@@ -77,6 +80,10 @@ void cli_parser(char* argopts[], int optsum) {
             option.exact = true;
             continue;
         }
+        if (!_stricmp(argopts[i], "--bit")) {
+            option.bitdepth = argopts[i+1][0];
+            continue;
+        }
     }
 
     if (!(set_f ^ set_d)) {
@@ -85,10 +92,10 @@ void cli_parser(char* argopts[], int optsum) {
         return;
         
     }else if (set_d) {
-        FakeWave2Loas(argopts[optsum - 1],&option);
+        FakeWave2Loas(argopts[optsum - 1], &option);
     }
     else if (set_f) {
-        Loas2FakeWave(argopts[optsum - 1]);
+        Loas2FakeWave(argopts[optsum - 1], &option);
     }
     return;
 }

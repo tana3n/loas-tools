@@ -7,11 +7,12 @@
 #include <regex>
 
 #include "Loas2FakeWave.h"
+#include "loas-tools.h"
 
 using namespace std::filesystem;
 
 
-void Loas2FakeWave(const char* source) {
+void Loas2FakeWave(const char* source, struct _opts *option) {
     std::cout << "InputFile: " << source << "\n";
     std::uintmax_t size = file_size(source);
     //std::cout << "Filesize: " << size << " bytes\n";
@@ -77,15 +78,14 @@ void Loas2FakeWave(const char* source) {
         fr += 1;
     }
 
-    std::cout << "Done Frame Skipping" << std::endl;
+    std::cout << "Done Frame Skipping" <<  std::endl;
     std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
-
     struct _waveheader wave;
     wave.riff.chunkId = *reinterpret_cast<const uint32_t*>("RIFF");
     wave.wave.chunkId = *reinterpret_cast<const uint32_t*>("WAVE");
     wave.wave.fmt = *reinterpret_cast<const uint32_t*>("fmt ");
     wave.wave.chunkSize = 16;
-    wave.wave.bitdepth = 24;
+    wave.wave.bitdepth = option->bitdepth;
     wave.wave.channel = 2;
     wave.wave.formatTag = 1;
     wave.wave.samplingRate = 48000;
@@ -94,7 +94,7 @@ void Loas2FakeWave(const char* source) {
     wave.data.chunkId = *reinterpret_cast<const uint32_t*>("data");
 
     char out_fill[6144] = { 0 };
-
+    std::cout << "CurrentSector: " << std::dec << wave.wave.bitdepth;
     output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
     output_wav.seekp(sizeof(wave));
 
