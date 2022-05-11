@@ -30,7 +30,7 @@ void usage() {
     std::cout << "Options:\n";
     std::cout << "-D\tDecode mode(FakeWave to latm)\n";
     std::cout << "-F\tFake mode (latm to FakeWave)\n\n";
-    std::cout << "--bit\tSelecting WaveHeader blocksize (for Fake mode)\n\t8:\t8bit\n\t16:\t16bit\n\t24:\t24bit(default)\n";
+    std::cout << "--bitdepth\tSelecting WaveHeader blocksize (for Fake mode)\n\t8:\t8bit\n\t16:\t16bit\n\t24:\t24bit(default)\n";
 
     std::cout << "--overwrite\tIf it exists in the output destination, it will be overwritten\n";
     std::cout << "--exact\tOutputs the deviation correction information of the start point(This is vaild for matroska)\n";
@@ -80,7 +80,7 @@ void cli_parser(char* argopts[], int optsum) {
             option.exact = true;
             continue;
         }
-        if (!_stricmp(argopts[i], "--bit")) {
+        if (!_stricmp(argopts[i], "--bitdepth")) {
             option.bitdepth = argopts[i+1][0];
             continue;
         }

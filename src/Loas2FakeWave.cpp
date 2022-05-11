@@ -8,6 +8,7 @@
 
 #include "Loas2FakeWave.h"
 #include "loas-tools.h"
+#include "parse_latm.h"
 
 using namespace std::filesystem;
 
@@ -50,7 +51,7 @@ void Loas2FakeWave(const char* source, struct _opts *option) {
         }
 
         import_latm.seekg(i);
-        import_latm.read(hBuf, 6);
+        import_latm.read(hBuf, 7);
         if (hBuf[0] != 0x56) {
             //std::cout << "[LatmDecorder]hBuf["<< i<<"] is not 0x56. This byte is 0x" << std::hex << (unsigned int)(unsigned char)hBuf[0] << std::endl;
             continue;
@@ -67,10 +68,16 @@ void Loas2FakeWave(const char* source, struct _opts *option) {
         break;
     }
     std::cout << "Done Searching Header\n";
+    int channelConfiguration = GetChannelConfiguration(hBuf);
+    if (channelConfiguration == 13  & option->bitdepth != 24) {
+        std::cout << "[Warn]Detected 22.2ch frame.  Forcing to bitdepth option(--bitdepth 24) for prevent bitrate overflow.\n";
+
+        option->bitdepth = 24;
+    }
 
     while(fr < (std::abs(floor(offsets)))) {
         std::uintmax_t j = import_latm.tellg();
-        import_latm.read(hBuf, 6);
+        import_latm.read(hBuf, 7);
         std::uintmax_t length = ((((((unsigned char*)hBuf)[1] & 0x1F) << 8) | ((unsigned char*)hBuf)[2]) + 3);
         
         //std::cout << "Skipping  " << std::dec << fr << " of " << std::abs(floor(offsets)) << std::endl;
@@ -94,7 +101,6 @@ void Loas2FakeWave(const char* source, struct _opts *option) {
     wave.data.chunkId = *reinterpret_cast<const uint32_t*>("data");
 
     char out_fill[6144] = { 0 };
-    std::cout << "CurrentSector: " << std::dec << wave.wave.bitdepth;
     output_wav.open(filename, std::ios::out | std::ios::binary | std::ios::trunc);
     output_wav.seekp(sizeof(wave));
 
