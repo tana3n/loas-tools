@@ -20,7 +20,13 @@ void FakeWave2Loas(const char* source,struct _opts *option) {
         return;
     }
     //std::cout << "Searching Header\n";
-    char* hBuf = new char[6144];
+    char* iBuf = new char[48];
+    import_fakelatm.read(iBuf, 48);
+    uint16_t blockSize = iBuf[0x20];
+    char* hBuf = new char[blockSize*1024];
+    std::cout << "[Info]Initilized blocksize: " << blockSize <<"\n";
+
+    //その前にヘッダー読んだ上で1フレームのサイズを計算しないといけないと思う
     int i = 46;//Skipping WAVE header
 
     while (import_fakelatm.tellg() < size) {
@@ -58,7 +64,7 @@ void FakeWave2Loas(const char* source,struct _opts *option) {
     for (int i = 0; i < size; i++) {
     //while (import_fakelatm.tellg() <= size) {//sync
         import_fakelatm.seekg(i);
-        import_fakelatm.read(hBuf, 6144);
+        import_fakelatm.read(hBuf, blockSize * 1024);
         if ( (hBuf[0] != 0x56) || (hBuf[1] & 0xE0) != 0xe0 ){
             continue;
         }
@@ -68,12 +74,12 @@ void FakeWave2Loas(const char* source,struct _opts *option) {
 
         std::cout << "\r[" << std::setfill('0') << std::left <<std::setw(4) <<  std::floor(double(i+length) / (double)size*10000)/100 
             << "%]";//Output " << double((size_t)i + length)/1024/1024 << "Mbytes" ;
-        import_fakelatm.read(hBuf, 6144);
+        import_fakelatm.read(hBuf, blockSize * 1024);
         if ((hBuf[0] != 0x56) || (hBuf[1] & 0xE0) != 0xe0) {
             continue;
         }
         else {
-            i = i + 6143;//4095;//== ch * (Bit/8)
+            i = i + blockSize * 1024 - 1;//== ch * (Bit/8)
         }
         
     }
