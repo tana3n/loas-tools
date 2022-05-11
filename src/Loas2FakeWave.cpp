@@ -32,10 +32,15 @@ void Loas2FakeWave(const char* source, struct _opts *option) {
     path p = std::regex_replace(source, re, "0");
     path filename = p.replace_extension("wav");
     std::cout << "SetOutputFile: " << filename << std::endl;
+
+    if (exists(filename) & !(option->overwrite)) {
+        std::cout << "[Error]" << filename << "is exist. (use overwrite options: --overwrite)" << std::endl;
+
+        return;
+    }
     std::cout << "DELAY  " << m[0].str() << "ms" << "(" << samples << "samples)" << std::endl;
     double offsets = samples/1024.0;
     double patting = (floor(offsets) * 1024.0 - samples) * 6;
-    //std::cout << "Exaxtry Offsets: " << ceil(offsets) << "Frames + " << fmod(samples, 1024) << "samples(DELAY " << fmod(samples, 1024) / 48 << "ms)" << std::endl;
     std::cout << "Exactly Offsets: " << floor(offsets) << "Frames +" << patting / 4.0 << "Sample (DELAY " << (samples - floor(offsets) * 1024.0) / 48 << "ms)" << std::endl;
 
 
@@ -67,7 +72,7 @@ void Loas2FakeWave(const char* source, struct _opts *option) {
         import_latm.seekg(i);
         break;
     }
-    std::cout << "Done Searching Header\n";
+
     int channelConfiguration = GetChannelConfiguration(hBuf);
     if (channelConfiguration == 13  & option->bitdepth != 24) {
         std::cout << "[Warn]Detected 22.2ch frame.  Forcing to bitdepth option(--bitdepth 24) for prevent bitrate overflow.\n";
@@ -85,8 +90,8 @@ void Loas2FakeWave(const char* source, struct _opts *option) {
         fr += 1;
     }
 
-    std::cout << "Done Frame Skipping" <<  std::endl;
-    std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
+    //std::cout << "Done Frame Skipping" <<  std::endl;
+    //std::cout << "CurrentSector: " << import_latm.tellg() << std::endl;
     struct _waveheader wave;
     wave.riff.chunkId = *reinterpret_cast<const uint32_t*>("RIFF");
     wave.wave.chunkId = *reinterpret_cast<const uint32_t*>("WAVE");
